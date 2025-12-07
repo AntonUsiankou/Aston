@@ -1,3 +1,5 @@
+package org.ausiankou;
+
 import java.util.Objects;
 
 public class CustomHashMap<K, V> {
