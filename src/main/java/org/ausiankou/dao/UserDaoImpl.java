@@ -5,8 +5,9 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.ausiankou.exception.UserServiceException;
 import org.ausiankou.model.User;
-import org.ausiankou.util.HibernateUtil;
+import org.ausiankou.service.HibernateService;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
@@ -18,11 +19,18 @@ import org.apache.logging.log4j.Logger;
 
 public class UserDaoImpl implements UserDao {
     private static final Logger logger = LogManager.getLogger(UserDaoImpl.class);
+    private final SessionFactory sessionFactory;
 
+    public UserDaoImpl(SessionFactory sessionFactory){
+        this.sessionFactory = sessionFactory;
+    }
+    public UserDaoImpl(){
+        this(HibernateService.getSessionFactory());
+    }
     @Override
     public User save(User user) {
         Transaction transaction = null;
-        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+        try(Session session = HibernateService.getSessionFactory().openSession()){
             transaction = session.beginTransaction();
             session.persist(user);
             transaction.commit();
@@ -39,7 +47,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> findById(Long id) {
-        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+        try(Session session = HibernateService.getSessionFactory().openSession()){
             User user = session.get(User.class, id);
             if(user != null){
                 logger.info("User found with ID: {}", id);
@@ -55,7 +63,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<User> findAll() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = HibernateService.getSessionFactory().openSession()) {
             CriteriaBuilder cb = session.getCriteriaBuilder();
             CriteriaQuery<User> cq = cb.createQuery(User.class);
             Root<User> root = cq.from(User.class);
@@ -73,7 +81,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User update(User user) {
         Transaction transaction = null;
-        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+        try(Session session = HibernateService.getSessionFactory().openSession()){
             transaction = session.beginTransaction();
             User updateUser = session.merge(user);
             transaction.commit();
@@ -91,7 +99,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public void delete(Long id) {
         Transaction transaction = null;
-        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+        try(Session session = HibernateService.getSessionFactory().openSession()){
             transaction = session.beginTransaction();
             User user = session.get(User.class, id);
             if(user != null){
@@ -112,7 +120,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> findByEmail(String email) {
-        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+        try(Session session = HibernateService.getSessionFactory().openSession()){
             Query<User> query = session.createQuery(
                     "from User where email = :email", User.class);
             query.setParameter("email",email);
@@ -127,7 +135,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<User> findByName(String name) {
-        try(Session session = HibernateUtil.getSessionFactory().openSession()){
+        try(Session session = HibernateService.getSessionFactory().openSession()){
             Query<User> query = session.createQuery(
                     "from User where name like :name", User.class);
             query.setParameter("name", "%" + name + "%");

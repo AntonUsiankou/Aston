@@ -1,4 +1,4 @@
-package org.ausiankou.util;
+package org.ausiankou.service;
 
 
 import org.ausiankou.model.User;
@@ -7,8 +7,8 @@ import org.hibernate.cfg.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class HibernateUtil {
-    private static final Logger logger = LogManager.getLogger(HibernateUtil.class);
+public class HibernateService {
+    private static final Logger logger = LogManager.getLogger(HibernateService.class);
     private static SessionFactory sessionFactory;
 
     static {

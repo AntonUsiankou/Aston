@@ -44,3 +44,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+git rm --cached pom.xml
+git add pom.xml
+git commit -m "Вернул pom.xml под контроль Git"
