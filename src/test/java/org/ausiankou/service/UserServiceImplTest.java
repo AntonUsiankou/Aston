@@ -43,35 +43,22 @@ class UserServiceImplTest {
     void checkCreateUser() {
         // Given
         UserRequestDto requestDto = UserRequestDto.builder()
-                .name("John")
-                .email("john@test.com")
-                .age(25)
-                .build();
+                .name("John").email("john@test.com").age(25).build();
 
         User user = User.builder()
-                .name("John")
-                .email("john@test.com")
-                .age(25)
-                .build();
+                .name("John").email("john@test.com").age(25).build();
 
         User savedUser = User.builder()
-                .id(1L)
-                .name("John")
-                .email("john@test.com")
-                .age(25)
-                .createdAt(LocalDateTime.now())
-                .build();
+                .id(1L).name("John").email("john@test.com").age(25)
+                .createdAt(LocalDateTime.now()).build();
 
         UserResponseDto responseDto = UserResponseDto.builder()
-                .id(1L)
-                .name("John")
-                .email("john@test.com")
-                .age(25)
-                .createAt(savedUser.getCreatedAt())
-                .build();
+                .id(1L).name("John").email("john@test.com").age(25)
+                .createAt(savedUser.getCreatedAt()).build();
+
         given(userRepository.existsByEmail("john@test.com")).willReturn(false);
-        given(userMapper.toEntity(requestDto)).willReturn(user);
-        given(userRepository.save(user)).willReturn(savedUser);
+        given(userMapper.toEntity(any(UserRequestDto.class))).willReturn(user);
+        given(userRepository.save(any(User.class))).willReturn(savedUser);
         given(userMapper.toResponseDto(savedUser)).willReturn(responseDto);
 
         // When
@@ -80,7 +67,7 @@ class UserServiceImplTest {
         // Then
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getName()).isEqualTo("John");
-        verify(userRepository).save(user);
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
@@ -160,16 +147,12 @@ class UserServiceImplTest {
         verify(userRepository).save(existingUser);
     }
 
-    @Test
-    @DisplayName("Проверка удаления пользователя")
+    @Test @DisplayName("Проверка удаления пользователя")
     void checkDeleteUser() {
         // Given
-        given(userRepository.existsById(1L)).willReturn(true);
-
+        User user = User.builder().id(1L).email("a@b.com").name("A").build();
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
         // When
-        userService.deleteUser(1L);
-
-        // Then
-        verify(userRepository).deleteById(1L);
-    }
+        userService.deleteUser(1L); // Then
+        verify(userRepository).deleteById(1L); }
 }

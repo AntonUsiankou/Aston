@@ -1,5 +1,9 @@
 package org.ausiankou.service;
 
+import org.ausiankou.config.KafkaProducerService;
+import org.ausiankou.event.UserCreatedEvent;
+import org.ausiankou.event.UserDeletedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,19 +26,18 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final KafkaProducerService kafkaProducerService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
     public UserResponseDto createUser(UserRequestDto userRequest) {
-        log.info("Creating user: {}", userRequest.getEmail());
-
         if (userRepository.existsByEmail(userRequest.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new IllegalArgumentException("Email уже существует");
         }
-
         User user = userMapper.toEntity(userRequest);
         User savedUser = userRepository.save(user);
-
+        eventPublisher.publishEvent(new UserCreatedEvent(this, savedUser.getId(), savedUser.getEmail(), savedUser.getName()));
         return userMapper.toResponseDto(savedUser);
     }
 
@@ -83,12 +86,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long id) {
-        log.info("Deleting user ID: {}", id);
-
-        if (!userRepository.existsById(id)) {
-            throw new UserServiceException("User not found");
-        }
-
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
         userRepository.deleteById(id);
+        eventPublisher.publishEvent(new UserDeletedEvent(this, user.getId(), user.getEmail(), user.getName()));
     }
 }
