@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -136,9 +137,9 @@ public class UserControllerTest {
                 .age(30)
                 .build();
 
-        Page<UserResponseDto> page = new PageImpl<>(Arrays.asList(user1, user2));
+        List<UserResponseDto> users = Arrays.asList(user1, user2);
 
-        given(userService.getAllUsers(any(Pageable.class))).willReturn(page);
+        given(userService.getAllUsers()).willReturn(users);
 
         // When Then
         mockMvc.perform(get("/api/v1/users"))

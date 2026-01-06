@@ -1,8 +1,7 @@
 package org.ausiankou.service;
 
-import org.ausiankou.config.KafkaProducerService;
-import org.ausiankou.event.UserCreatedEvent;
-import org.ausiankou.event.UserDeletedEvent;
+import org.ausiankou.dto.events.UserCreatedEvent;
+import org.ausiankou.dto.events.UserDeletedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,9 +36,20 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(userRequest.getEmail())) {
             throw new IllegalArgumentException("Email уже существует");
         }
+
         User user = userMapper.toEntity(userRequest);
         User savedUser = userRepository.save(user);
-        eventPublisher.publishEvent(new UserCreatedEvent(this, savedUser.getId(), savedUser.getEmail(), savedUser.getName()));
+
+        kafkaProducerService.sendUserCreatedEvent(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getName()
+        );
+
+        eventPublisher.publishEvent(
+                new UserCreatedEvent(this, savedUser.getId(), savedUser.getEmail(), savedUser.getName())
+        );
+
         return userMapper.toResponseDto(savedUser);
     }
 
@@ -54,11 +66,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserResponseDto> getAllUsers(Pageable pageable) {
+    public List<UserResponseDto> getAllUsers() {
         log.info("Getting all users");
 
-        return userRepository.findAll(pageable)
-                .map(userMapper::toResponseDto);
+        return userRepository.findAll().stream()
+                .map(userMapper::toResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -87,8 +100,20 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                .orElseThrow(() -> new UserServiceException("Пользователь не найден"));
+
+        Long userId = user.getId();
+        String email = user.getEmail();
+        String username = user.getName();
+
         userRepository.deleteById(id);
-        eventPublisher.publishEvent(new UserDeletedEvent(this, user.getId(), user.getEmail(), user.getName()));
+
+        kafkaProducerService.sendUserDeletedEvent(userId, email, username);
+
+        eventPublisher.publishEvent(
+                new UserDeletedEvent(this, userId, email, username)
+        );
+
+        log.info("Пользователь удален: ID={}, Email={}", userId, email);
     }
 }

@@ -4,7 +4,8 @@ import lombok.Data;
 
 @Data
 public class UserEvent {
-    private String operation;
+    private String eventType;
     private String email;
-    private String userName;
+    private String username;
+    private Long userId;
 }

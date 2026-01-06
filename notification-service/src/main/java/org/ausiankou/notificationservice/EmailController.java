@@ -17,11 +17,25 @@ public class EmailController {
                             @RequestParam String subject,
                             @RequestParam String text) {
         emailService.sendEmail(to, subject, text);
-        return "Email отправлен!";
+        return "✅ Email отправлен на адрес: " + to;
+    }
+
+    @PostMapping("/welcome")
+    public String sendWelcomeEmail(@RequestParam String email,
+                                   @RequestParam(required = false, defaultValue = "Пользователь") String name) {
+        emailService.sendUserCreatedEmail(email, name);
+        return "✅ Приветственное письмо отправлено на: " + email;
+    }
+
+    @PostMapping("/goodbye")
+    public String sendGoodbyeEmail(@RequestParam String email,
+                                   @RequestParam(required = false, defaultValue = "Пользователь") String name) {
+        emailService.sendUserDeletedEmail(email, name);
+        return "✅ Письмо об удалении отправлено на: " + email;
     }
 
     @GetMapping("/health")
     public String health() {
-        return "Сервис работает!";
+        return "✅ Сервис уведомлений работает!";
     }
 }

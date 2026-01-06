@@ -2,41 +2,48 @@ package org.ausiankou.notificationservice;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
-
     @Value("${email.mode:console}")
     private String emailMode;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public EmailService() {
+    }
+    public void sendEmail(String to, String subject, String text) {
+        printToConsole(to, subject, text);
     }
 
-    public void sendEmail(String to, String subject, String text) {
-        if ("console".equals(emailMode)) {
-            System.out.println("\n📧 [DEV] Email would be sent:");
-            System.out.println("   To: " + to);
-            System.out.println("   Subject: " + subject);
-            System.out.println("   Text: " + text);
-        } else {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(text);
+    public void sendUserCreatedEmail(String email, String username) {
+        String subject = "Добро пожаловать! Ваш аккаунт создан";
+        String text = String.format(
+                "Здравствуйте, %s! Ваш аккаунт на сайте был успешно создан.",
+                username != null ? username : ""
+        );
+        sendEmail(email, subject, text);
+    }
 
-            try {
-                mailSender.send(message);
-                log.info("Email sent to: {}", to);
-            } catch (Exception e) {
-                log.error("Failed to send email: {}", e.getMessage());
-            }
-        }
+    public void sendUserDeletedEmail(String email, String username) {
+        String subject = "Ваш аккаунт был удален";
+        String text = String.format(
+                "Здравствуйте, %s! Ваш аккаунт был удалён.",
+                username != null ? username : ""
+        );
+        sendEmail(email, subject, text);
+    }
+
+    private void printToConsole(String to, String subject, String text) {
+        System.out.println("\n📧 [DEV MODE] Email:");
+        System.out.println("════════════════════════════════════════");
+        System.out.println("Кому:      " + to);
+        System.out.println("Тема:      " + subject);
+        System.out.println("────────────────────────────────────────");
+        System.out.println("Текст:");
+        System.out.println(text);
+        System.out.println("════════════════════════════════════════\n");
+        log.info("📧 Email (dev mode) отправлен на: {}", to);
     }
 }

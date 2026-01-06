@@ -27,7 +27,7 @@ public class UserMapper {
         return User.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
-                .email(String.valueOf(dto.getAge()))
+                .age(dto.getAge())
                 .build();
     }
 }
