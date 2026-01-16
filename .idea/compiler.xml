@@ -12,22 +12,36 @@
         </processorPath>
         <module name="notification-service" />
       </profile>
-      <profile name="Annotation profile for User Service" enabled="true">
+      <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
-        </processorPath>
-        <module name="AstonHibernate" />
+        <module name="api-gateway" />
+        <module name="user-service" />
+      </profile>
+      <profile name="Annotation profile for Eureka-Server" enabled="true">
+        <sourceOutputDir name="../eureka-server/target/generated-sources/annotations" />
+        <sourceTestOutputDir name="../eureka-server/target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="Eureka-Server" />
+      </profile>
+      <profile name="Annotation profile for Aston Microservices Platform" enabled="true">
+        <sourceOutputDir name="../config-server/target/generated-sources/annotations" />
+        <sourceTestOutputDir name="../config-server/target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="Config-Server" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="11" />
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="AstonHibernate" options="-parameters" />
+      <module name="AstonHibernate" options="" />
+      <module name="Config-Server" options="-parameters" />
+      <module name="Eureka-Server" options="-parameters" />
+      <module name="api-gateway" options="-parameters" />
       <module name="notification-service" options="-parameters" />
+      <module name="user-service" options="-parameters" />
     </option>
   </component>
 </project>
